@@ -4,12 +4,13 @@ $(document).ready(init);
 //global vars
 var current = 'red'; //current active player, a later function resets this every turn
 var $source; //source coords, captured from $(this) on var select
-
+var enemy = 'red';
 function init(){ //this function initializes the start of the game by calling other functions in the code
   initBoard();
   switchUser();
   $('#board').on('click', '.active', select); //this click handler allows the active player to select a piece on the board by clicking on it
-  $('#board').on('click', '.empty', move);    //this click handler allows the selected piece to be moved to an empty space
+  $('#board').on('click', '.empty', move);
+  $('#board').on('click', '.active', isEnemy);    //this click handler allows the selected piece to be moved to an empty space
 }
 function move(){
   if(!$source){ //this checks if there is a current piece selected, if not, RETURN, repeat function
@@ -39,8 +40,34 @@ function move(){
       switchUser();
       break;
     case 'jump':
+      jumpPiece($source, $target);
+      
       console.log('jump');
   }
+}
+
+/*function jump($source){
+  
+  var $target = $(this); //sets the target destination
+  var isKing = $source.is('.king'); //this checks for a specific attribute, in this case, a class.
+
+  var srcJ = {}; //object to store x-y coords for the starting piece
+  var tgtJ = {}; //object to store x/y coords for destination square
+
+  var compass = {};
+  compass.north = (current === 'black') ? -1 : 1; //this var sets a relative compass for each side of the board
+  compass.east = (current === 'black') ? 1 : -1; //that way you can use one function for both sides and not have
+  compass.west = compass.east * -1;              //to account for the inverse x,y coords
+  compass.south = compass.north * -1;
+  
+  jumpPiece($source, $target);
+}*/
+function jumpPiece($source, $target){
+  var targetClasses = $target.attr('class');
+  var sourceClasses = $source.attr('class');
+
+  $target.attr('class', sourceClasses);
+  $source.attr('class', targetClasses);
 }
 
 function movePiece($source, $target){ //this function moves the piece by swapping the classes of the source and the target
@@ -65,12 +92,20 @@ function isMove(src, tgt, compass, isKing){  //this function actually determines
   return (src.x + compass.east === tgt.x || src.x + compass.west === tgt.x) && (src.y + compass.north === tgt.y || (isKing && src.y + compass.south === tgt.y));
 }      //above code compares the src coords with the coords of the target, you can only ever move 1 space away on both axes
        //it accounts for the 'King' class by adding an or ( || ) statement for king's ability to move south
-function isJump(){
-
+function isJump(isEnemy, isMove){
+  if((isEnemy) && (!isMove)){
+    return true;
+  }
 }
 
-function isEnemy(){
-
+function isEnemy(){ //this ternary will determine if the piece in front is
+  enemy = (current === 'black') ? 'red' : 'black'; //an enemy piece
+  $('.valid').removeClass('enemy');
+  $('.' + current).addClass('enemy');
+}
+console.log(isEnemy());
+function kingMe(){
+  
 }
 
 function select(){  //this function selects the piece to be moved
