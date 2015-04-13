@@ -8,7 +8,6 @@ $(document).ready(init);
 function init(){
   initBoard();
   switchUser();
-  win();
 
   $('#board').on('click', '.active', select);
   $('#board').on('click', '.empty', drop);
@@ -21,6 +20,7 @@ function initBoard(){
 }
 
 function switchUser(){
+  win();
   enemy = (current === 'red') ? 'black' : 'red';
   current = (current === 'red') ? 'black' : 'red';
   $('.valid').removeClass('active source').addClass('inactive');
@@ -76,11 +76,11 @@ function drop(){
       src.y = $source.data('y') * 1;
 
       // code to check if double jump possible
-      $('td').each(function(e){
+      $('td').each(function(){
         if ($(this).data('y') === src.y + (compass.north * 2) && ($(this).data('x') === src.x + (compass.east * 2) || $(this).data('x') === src.x + (compass.west * 2))){
           $target = $(this)[0];
 
-          console.log($target);
+          //console.log($target);
 
           if ($($target).hasClass('empty')){
 
@@ -97,6 +97,8 @@ function drop(){
             $middle = $middle[0];
             $middle.addClass('enemy');
 
+            win();
+            
             if ($($middle).hasClass('inactive player')){
               switchUser();
             }
@@ -168,13 +170,12 @@ function isEnemy(src, tgt, compass, isKing){
   var checkX = ((src.x + tgt.x) / 2);
   var checkY = ((src.y + tgt.y) / 2);
   var $middle = $('td[data-x=' + checkX + '][data-y='+ checkY +']');
-  console.log($middle[0]);
+  //console.log($middle[0]);
   $middle = $middle[0];
 
 
   if ($($middle).hasClass('player inactive')){
     $($middle).removeClass().addClass('valid empty');
-    console.log("valid jump");
     return true;
   }
   return false;
@@ -185,6 +186,6 @@ function win(){
     alert('Red Wins');
   }
   else if($('.red').length === 0){
-    alert('Black Wins')
+    alert('Black Wins');
   }
 }
