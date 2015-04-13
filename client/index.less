@@ -11,23 +11,39 @@ h1{
 .valid{
   background-color: black;
 }
-
-#board{
-  background-color: #f6f6f6;
-  height: 900px;
-  width: 900px;
-  border-radius: 5px;
-  margin: auto;
-  margin-top: 15px;
+@media (max-width: 900px){
+  #board{
+    background-color: #f6f6f6;
+    height: 450px;
+    width: 450px;
+    border-radius: 5px;
+    margin: auto;
+    margin-top: 15px;
+  }
+  td{
+    height: 40px;
+    width: 40px;
+    margin: 0;
+    padding: 0;
+  }
 }
 
-td{
-  height: 79px;
-  width: 79px;
-  margin: 0;
-  padding: 0;
+@media (min-width: 901px){
+  #board{
+    background-color: #f6f6f6;
+    height: 900px;
+    width: 900px;
+    border-radius: 5px;
+    margin: auto;
+    margin-top: 15px;
+  }
+  td{
+    height: 79px;
+    width: 79px;
+    margin: 0;
+    padding: 0;
+  }
 }
-
 .black{
   background-image: url('/assets/black.png');
   background-size:cover;
