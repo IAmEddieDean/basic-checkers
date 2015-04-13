@@ -1,36 +1,70 @@
 body{
-  color: white;
+  color: #f6f6f6;
   background-color: #292c33;
 }
-table{
-  margin: auto;
+#page{
+  margin: 0 auto;
 }
-td{
-  background-color: white;
-  width: 30px;
-  height: 30px;
-  padding: 25px;
+h1{
+  text-align: center;
 }
 .valid{
-  background-color: lightblue;
+  background-color: black;
 }
-.red{
-  background-size: 80px;
-  background-image: url('/assets/red.png');
-  background-repeat: no-repeat;
+
+#board{
+  background-color: #f6f6f6;
+  height: 900px;
+  width: 900px;
+  border-radius: 5px;
+  margin: auto;
+  margin-top: 15px;
 }
+
+td{
+  height: 79px;
+  width: 79px;
+  margin: 0;
+  padding: 0;
+}
+
 .black{
-  background-size: 80px;
   background-image: url('/assets/black.png');
-  background-repeat: no-repeat;
+  background-size:cover;
+  //width: 60px;
+  //height: 60px;
+  // border-radius: 100%;
 }
+
+.red{
+  background-image: url('/assets/red.png');
+  background-size: cover;
+  //width: 60px;
+  //height: 60px;
+  // border-radius: 100%;
+}
+
 .active{
-  background-color: gray;
+  box-shadow: 0 0 20px green;
 }
-.selected{
-  background-color: pink;
+
+#source{
+  box-shadow: 0 0 30px #035525;
 }
-//.redActive{
-  //background-image: url('/assets/red.jpeg');
-  //background-size: 45px;
-//}
+.enemy{
+  box-shadow: 0 0 10px red;
+}
+
+.hidden{
+  display:none;
+}
+
+.kingblack{
+  background-image: url('/assets/blackKing.png');
+  background-size: cover;
+}
+
+.kingred{
+  background-image: url('/assets/redKing.png');
+  background-size: cover;
+}

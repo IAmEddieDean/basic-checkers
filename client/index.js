@@ -1,127 +1,190 @@
 'use strict';
+var current = 'black';
+var $source;
+var enemy = 'enemy';
+
 $(document).ready(init);
 
-//global vars
-var current = 'red'; //current active player, a later function resets this every turn
-var $source; //source coords, captured from $(this) on var select
-var enemy = 'red';
-function init(){ //this function initializes the start of the game by calling other functions in the code
+function init(){
   initBoard();
   switchUser();
-  $('#board').on('click', '.active', select); //this click handler allows the active player to select a piece on the board by clicking on it
-  $('#board').on('click', '.empty', move);
-  $('#board').on('click', '.active', isEnemy);    //this click handler allows the selected piece to be moved to an empty space
+  win();
+
+  $('#board').on('click', '.active', select);
+  $('#board').on('click', '.empty', drop);
 }
-function move(){
-  if(!$source){ //this checks if there is a current piece selected, if not, RETURN, repeat function
+
+function initBoard(){
+  $('#board tr:lt(3) .valid').addClass('red player');
+  $('#board tr:gt(4) .valid').addClass('black player');
+  $('td.valid:not(.player)').addClass('empty');
+}
+
+function switchUser(){
+  enemy = (current === 'red') ? 'black' : 'red';
+  current = (current === 'red') ? 'black' : 'red';
+  $('.valid').removeClass('active source').addClass('inactive');
+  $('.' + current).addClass('active').removeClass('enemy');
+}
+
+function select(){
+  $source = $(this);
+  $('.valid').removeClass('source');
+  $source.addClass('source');
+}
+
+//manipulate drop function
+function drop(){
+  if (!$source) {
     return;
   }
-  var $target = $(this); //sets the target destination
-  var isKing = $source.is('.king'); //this checks for a specific attribute, in this case, a class.
 
-  var src = {}; //object to store x-y coords for the starting piece
-  var tgt = {}; //object to store x/y coords for destination square
+  var $target = $(this);
+  var isKing = $source.is('.king');
 
-  src.x = $source.data('x') * 1; //multiplying by 1 prevents the need for a parseInt or parseFloat method
+  var src = {};
+  var tgt = {};
+
+  src.x = $source.data('x') * 1;
   src.y = $source.data('y') * 1;
   tgt.x = $target.data('x') * 1;
   tgt.y = $target.data('y') * 1;
 
+
   var compass = {};
-  compass.north = (current === 'black') ? -1 : 1; //this var sets a relative compass for each side of the board
-  compass.east = (current === 'black') ? 1 : -1; //that way you can use one function for both sides and not have
-  compass.west = compass.east * -1;              //to account for the inverse x,y coords
+  compass.north = (current === 'black') ? -1 : 1;
+  compass.east = (current === 'black') ? 1 : 1;
+  compass.west = compass.east * -1;
   compass.south = compass.north * -1;
 
-  switch(moveType(src, tgt, compass, isKing)){ //this switch loop will send arguments to the function moveType, which will
-    case 'move':                               //determine the type of move. Based on the result of function moveType, it
-      console.log('move');                     //will call either the movePiece or jumpPiece functions
-      movePiece($source, $target);
+  switch(moveType(src, tgt, compass, isKing)){
+    case 'move':
       switchUser();
+      movePiece($source, $target);
       break;
     case 'jump':
-      jumpPiece($source, $target);
       
-      console.log('jump');
+      var targetClasses = $target.attr('class');
+      var sourceClasses = $source.attr('class');
+
+      movePiece($source, $target);
+      $source.addClass('empty valid');
+      $target.addClass('player');
+      $source = $target;
+
+      src.x = $source.data('x') * 1;
+      src.y = $source.data('y') * 1;
+
+      // code to check if double jump possible
+      $('td').each(function(e){
+        if ($(this).data('y') === src.y + (compass.north * 2) && ($(this).data('x') === src.x + (compass.east * 2) || $(this).data('x') === src.x + (compass.west * 2))){
+          $target = $(this)[0];
+
+          console.log($target);
+
+          if ($($target).hasClass('empty')){
+
+            // enemy = (current === 'black') ? 'red' : 'black';
+            // $('.valid').removeClass('enemy');
+            // $('.' + current).addClass('enemy');
+
+            tgt.x = $($target).data('x');
+            tgt.y = $($target).data('y');
+
+            var checkX = ((src.x + tgt.x) / 2);
+            var checkY = ((src.y + tgt.y) / 2);
+            var $middle = $('td[data-x=' + checkX + '][data-y='+ checkY +']');
+            $middle = $middle[0];
+            $middle.addClass('enemy');
+
+            if ($($middle).hasClass('inactive player')){
+              switchUser();
+            }
+
+          }
+        }
+      })
+
+      switchUser();
   }
 }
 
-/*function jump($source){
-  
-  var $target = $(this); //sets the target destination
-  var isKing = $source.is('.king'); //this checks for a specific attribute, in this case, a class.
+function moveType(src, tgt, compass, isKing){
 
-  var srcJ = {}; //object to store x-y coords for the starting piece
-  var tgtJ = {}; //object to store x/y coords for destination square
-
-  var compass = {};
-  compass.north = (current === 'black') ? -1 : 1; //this var sets a relative compass for each side of the board
-  compass.east = (current === 'black') ? 1 : -1; //that way you can use one function for both sides and not have
-  compass.west = compass.east * -1;              //to account for the inverse x,y coords
-  compass.south = compass.north * -1;
-  
-  jumpPiece($source, $target);
-}*/
-function jumpPiece($source, $target){
-  var targetClasses = $target.attr('class');
-  var sourceClasses = $source.attr('class');
-
-  $target.attr('class', sourceClasses);
-  $source.attr('class', targetClasses);
-}
-
-function movePiece($source, $target){ //this function moves the piece by swapping the classes of the source and the target
-  var targetClasses = $target.attr('class');
-  var sourceClasses = $source.attr('class');
-
-  $target.attr('class', sourceClasses);
-  $source.attr('class', targetClasses);
-}
-
-function moveType(src, tgt, compass, isKing){ //this function will evaluate the type of move, (regular move, or a jump),
-  if(isMove(src, tgt, compass, isKing)){      //based on the 4 arguments passed to it, and the result of the SWITCH
-    return 'move';                            //loop in the MOVE function
-  }
-
-  if(isJump() && isEnemy()){
+  if (isJump(src, tgt, compass, isKing) && isEnemy(src, tgt, compass, isKing)){
     return 'jump';
   }
-}
 
-function isMove(src, tgt, compass, isKing){  //this function actually determines if the tgt destination is a valid location
-  return (src.x + compass.east === tgt.x || src.x + compass.west === tgt.x) && (src.y + compass.north === tgt.y || (isKing && src.y + compass.south === tgt.y));
-}      //above code compares the src coords with the coords of the target, you can only ever move 1 space away on both axes
-       //it accounts for the 'King' class by adding an or ( || ) statement for king's ability to move south
-function isJump(isEnemy, isMove){
-  if((isEnemy) && (!isMove)){
-    return true;
+  if (isMove(src, tgt, compass, isKing)){
+    return 'move';
   }
 }
 
-function isEnemy(){ //this ternary will determine if the piece in front is
-  enemy = (current === 'black') ? 'red' : 'black'; //an enemy piece
-  $('.valid').removeClass('enemy');
-  $('.' + current).addClass('enemy');
-}
-console.log(isEnemy());
-function kingMe(){
-  
+function movePiece($source, $target){
+  var targetClasses = $target.attr('class');
+  var sourceClasses = $source.attr('class');
+
+
+  $target.attr('class', sourceClasses);
+  $source.attr('class', targetClasses);
+
+  // console.log("Target X-coordinates: " + $target.data('x'))
+  // console.log("Target Y-coordinates: " + $target.data('y'));
+
+  // add king classes
+  $target.data('y') === 0 ? $target.addClass('king kingblack') : console.log();
+  $target.data('y') === 7 ? $target.addClass('king kingred') : console.log();
+
 }
 
-function select(){  //this function selects the piece to be moved
-  $source = $(this);
-  $('.valid').removeClass('selected'); //this line clears a selection, if the player wants to select a different piece
-  $source.addClass('selected');
-
-}
-function initBoard(){  //this function draws the board at when loading or refreshing the page and places the pieces in the proper place
-  $('#board tr:lt(3) .valid').addClass('red player');
-  $('#board tr:gt(4) .valid').addClass('black player');
-  $('#board tr:lt(5):gt(2) .valid').addClass('empty');
+function isMove(src, tgt, compass, isKing){
+  // if tgt is left o right, north or south, is a king and  can go south
+  var moveLateral = src.x + compass.east === tgt.x || src.x + compass.west === tgt.x;
+  var moveRow = src.y + compass.north === tgt.y;
+  var kingMove = isKing && src.y + compass.south === tgt.y;
+  return (moveLateral) && (moveRow) || (moveLateral) && (kingMove);
 }
 
-function switchUser(){  //this function simply switches the users between turns. It is default on red to start in this example,
-  current = (current === 'black') ? 'red' : 'black';  //merely because it needs a starting value and cannot be UNDEFINED
-  $('.valid').removeClass('active selected');
-  $('.' + current).addClass('active');
+function isJump(src, tgt, compass, isKing){
+
+  var checkEast = compass.east * 2;
+  var checkWest = compass.west * 2;
+  var checkNorth = compass.north * 2;
+  var compassSouth = compass.south * 2;
+
+  var jumpLateral = src.x + checkEast === tgt.x || src.x + checkWest === tgt.x;
+  var jumpRow = src.y + checkNorth === tgt.y;
+  var kingJump = isKing && src.y + compassSouth === tgt.y;
+
+  return (jumpLateral) && (jumpRow) || (jumpLateral) && (kingJump);
+}
+
+function isEnemy(src, tgt, compass, isKing){
+
+  // enemy = (current === 'red') ? 'black' : 'red';
+  // $('.valid').removeClass('enemy');
+  // $('.' + current).addClass('enemy');
+
+  var checkX = ((src.x + tgt.x) / 2);
+  var checkY = ((src.y + tgt.y) / 2);
+  var $middle = $('td[data-x=' + checkX + '][data-y='+ checkY +']');
+  console.log($middle[0]);
+  $middle = $middle[0];
+
+
+  if ($($middle).hasClass('player inactive')){
+    $($middle).removeClass().addClass('valid empty');
+    console.log("valid jump");
+    return true;
+  }
+  return false;
+}
+
+function win(){
+  if($('.black').length === 0){
+    alert('Red Wins');
+  }
+  else if($('.red').length === 0){
+    alert('Black Wins')
+  }
 }
